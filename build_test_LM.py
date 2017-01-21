@@ -8,6 +8,7 @@ import getopt
 import numpy as np
 import scipy as sp
 from pprint import pprint
+from collections import Counter
 
 np.set_printoptions(threshold=np.inf)
 
@@ -20,35 +21,51 @@ def build_LM(in_file):
     # This is an empty method
     # Pls implement your code in below
     with open(in_file) as f:
-        data = f.read().splitlines()
+        raw_data = f.read().splitlines()
 
     # Extract labels
-    labels = []
-    for i in range(len(data)):
-        line_split = data[i].split()
-        labels.append(line_split[0])
-        data[i] = ' '.join(line_split[1:])
+    raw_labels = []
+    for i, v in enumerate(raw_data):
+        line_split = v.split(' ', 1)
+        raw_labels.append(line_split[0])
+        raw_data[i] = line_split[1]
 
-    # # Generate 4-grams
-    # data = [list(ngrams(line, 4, pad_left=True, pad_right=True, left_pad_symbol='<s>', right_pad_symbol='</s>')) for line in data]
-
-    # # Populate vocab
-    # vocab = set()
-    # for line in data:
-    #     vocab.update(set(line))
-
-    # vocab = list(vocab)
+    raw_labels = np.array(raw_labels)
+    labels = list(set(raw_labels))
     
-    raw_counts = sp.sparse.coo_matrix(cv.fit_transform(data))
+    # Generate 4-grams
+    raw_data = [list(ngrams(line, 4, pad_left=True, pad_right=True, left_pad_symbol='<s>', right_pad_symbol='</s>')) for line in raw_data]
+    raw_data = np.array(raw_data)
 
-    print(type(raw_counts))
-    data = np.ones(raw_counts.shape)
+    # Populate sorted vocab
+    vocab = set()
+    for line in raw_data:
+        vocab.update(set(line))
 
-    for i, j, v in zip(raw_counts.row, raw_counts.col, raw_counts.data):
-        data[i,j] = v
+    vocab = list(vocab)
+    vocab.sort()
+    reverse_vocab = {v:i for i,v in enumerate(vocab)}
 
-    del raw_counts
+    # Transform data into count vectors
+    data = np.zeros((len(labels), len(vocab)))
+    for i, label in enumerate(labels):
+        indices = np.where(raw_labels == label)
+        
+        for line in raw_data[indices]:
+            c = Counter(line)
+            for ngram in c:
+                data[i,reverse_vocab[ngram]] += c[ngram]
 
+        # Add-one smoothing
+        for j, val in enumerate(data[i]):
+            if val == 0:
+                data[i,j] += 1
+
+    del raw_data, raw_labels
+
+    print(data)
+    print(labels)
+            
     
 def test_LM(in_file, out_file, LM):
     """
@@ -82,6 +99,5 @@ if input_file_b == None or input_file_t == None or output_file == None:
     usage()
     sys.exit(2)
 
-cv = CountVectorizer(analyzer='char', ngram_range=(4,4))
 LM = build_LM(input_file_b)
 # test_LM(input_file_t, output_file, LM)
