@@ -82,7 +82,26 @@ def test_LM(in_file, out_file, LM):
     # This is an empty method
     # Pls implement your code in below
     with open(in_file) as f:
-        raw_test_data = f.read().splitlines()
+        raw_data = f.read().splitlines()
+
+    # Reconstruct vocab from any label
+    vocab = list(next(iter(LM.values())))
+    vocab.sort()
+    reverse_vocab = {v:i for i,v in enumerate(vocab)}
+
+    # Generate 4-grams
+    raw_data = [list(ngrams(line, 4, pad_left=True, pad_right=True, left_pad_symbol='<s>', right_pad_symbol='</s>')) for line in raw_data]
+    raw_data = np.array(raw_data)
+
+    # Transform data into count vectors
+    data = np.zeros((len(raw_data), len(vocab)))
+    for i, line in enumerate(raw_data):
+        c = Counter(line)
+        for ngram in c:
+            data[i,reverse_vocab[ngram]] += c[ngram]
+
+    print(data)
+
 
 
 def usage():
@@ -108,5 +127,4 @@ if input_file_b == None or input_file_t == None or output_file == None:
     sys.exit(2)
 
 LM = build_LM(input_file_b)
-print(LM)
 test_LM(input_file_t, output_file, LM)
