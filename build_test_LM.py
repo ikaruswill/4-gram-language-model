@@ -31,7 +31,7 @@ def build_LM(in_file):
         raw_data[i] = line_split[1]
 
     raw_labels = np.array(raw_labels)
-    labels = list(set(raw_labels))
+    lm_labels = list(set(raw_labels))
     
     # Generate 4-grams
     raw_data = [list(ngrams(line, 4, pad_left=True, pad_right=True, left_pad_symbol='<s>', right_pad_symbol='</s>')) for line in raw_data]
@@ -47,8 +47,8 @@ def build_LM(in_file):
     reverse_vocab = {v:i for i,v in enumerate(vocab)}
 
     # Transform data into count vectors
-    data = np.zeros((len(labels), len(vocab)))
-    for i, label in enumerate(labels):
+    data = np.zeros((len(lm_labels), len(vocab)))
+    for i, label in enumerate(lm_labels):
         indices = np.where(raw_labels == label)
         
         for line in raw_data[indices]:
@@ -65,10 +65,11 @@ def build_LM(in_file):
 
     # Convert data into probability vectors
     totals = [sum(line) for line in data]
+    lm_data = []
     for i, line in enumerate(data):
-        data[i] = [count / totals[i] for count in line]
+        lm_data.append({vocab[vi] : count / totals[i] for vi, count in enumerate(line)})
     
-    return {k:v for k,v in zip(labels, data)}
+    return {k:v for k,v in zip(lm_labels, lm_data)}
             
     
 def test_LM(in_file, out_file, LM):
@@ -80,6 +81,9 @@ def test_LM(in_file, out_file, LM):
     print("testing language models...")
     # This is an empty method
     # Pls implement your code in below
+    with open(in_file) as f:
+        raw_test_data = f.read().splitlines()
+
 
 def usage():
     print("usage: " + sys.argv[0] + " -b input-file-for-building-LM -t input-file-for-testing-LM -o output-file")
@@ -104,4 +108,5 @@ if input_file_b == None or input_file_t == None or output_file == None:
     sys.exit(2)
 
 LM = build_LM(input_file_b)
+print(LM)
 test_LM(input_file_t, output_file, LM)
