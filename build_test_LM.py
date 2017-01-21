@@ -2,8 +2,14 @@
 import re
 from nltk.tokenize import wordpunct_tokenize, sent_tokenize
 from nltk.util import ngrams
+from sklearn.feature_extraction.text import CountVectorizer
 import sys
 import getopt
+import numpy as np
+import scipy as sp
+from pprint import pprint
+
+np.set_printoptions(threshold=np.inf)
 
 def build_LM(in_file):
     """
@@ -23,14 +29,25 @@ def build_LM(in_file):
         labels.append(line_split[0])
         data[i] = ' '.join(line_split[1:])
 
-    # Generate 4-grams
-    data = [list(ngrams(line, 4, pad_left=True, pad_right=True, left_pad_symbol='<s>', right_pad_symbol='</s>')) for line in data]
+    # # Generate 4-grams
+    # data = [list(ngrams(line, 4, pad_left=True, pad_right=True, left_pad_symbol='<s>', right_pad_symbol='</s>')) for line in data]
 
-    # Populate vocab
-    vocab = set()
-    for line in data:
-        vocab.update(set(line))
+    # # Populate vocab
+    # vocab = set()
+    # for line in data:
+    #     vocab.update(set(line))
 
+    # vocab = list(vocab)
+    
+    raw_counts = sp.sparse.coo_matrix(cv.fit_transform(data))
+
+    print(type(raw_counts))
+    data = np.ones(raw_counts.shape)
+
+    for i, j, v in zip(raw_counts.row, raw_counts.col, raw_counts.data):
+        data[i,j] = v
+
+    del raw_counts
 
     
 def test_LM(in_file, out_file, LM):
@@ -65,5 +82,6 @@ if input_file_b == None or input_file_t == None or output_file == None:
     usage()
     sys.exit(2)
 
+cv = CountVectorizer(analyzer='char', ngram_range=(4,4))
 LM = build_LM(input_file_b)
 # test_LM(input_file_t, output_file, LM)
