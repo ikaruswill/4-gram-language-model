@@ -63,8 +63,12 @@ def build_LM(in_file):
 
     del raw_data, raw_labels
 
-    print(data)
-    print(labels)
+    # Convert data into probability vectors
+    totals = [sum(line) for line in data]
+    for i, line in enumerate(data):
+        data[i] = [count / totals[i] for count in line]
+    
+    return {k:v for k,v in zip(labels, data)}
             
     
 def test_LM(in_file, out_file, LM):
@@ -100,4 +104,4 @@ if input_file_b == None or input_file_t == None or output_file == None:
     sys.exit(2)
 
 LM = build_LM(input_file_b)
-# test_LM(input_file_t, output_file, LM)
+test_LM(input_file_t, output_file, LM)
