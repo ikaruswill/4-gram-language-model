@@ -10,7 +10,7 @@ import scipy as sp
 from pprint import pprint
 from collections import Counter
 
-np.set_printoptions(threshold=np.inf)
+# np.set_printoptions(threshold=np.inf)
 
 def build_LM(in_file):
     """
@@ -47,6 +47,7 @@ def build_LM(in_file):
     reverse_vocab = {v:i for i,v in enumerate(vocab)}
 
     # Transform data into count vectors
+    totals = []
     data = np.zeros((len(lm_labels), len(vocab)))
     for i, label in enumerate(lm_labels):
         indices = np.where(raw_labels == label)
@@ -68,7 +69,7 @@ def build_LM(in_file):
     lm_data = []
     for i, line in enumerate(data):
         lm_data.append({vocab[vi] : count / totals[i] for vi, count in enumerate(line)})
-    
+
     return {k:v for k,v in zip(lm_labels, lm_data)}
             
     
@@ -85,23 +86,29 @@ def test_LM(in_file, out_file, LM):
         raw_data = f.read().splitlines()
 
     # Reconstruct vocab from any label
-    vocab = list(next(iter(LM.values())))
-    vocab.sort()
-    reverse_vocab = {v:i for i,v in enumerate(vocab)}
+    vocab = set(next(iter(LM.values())))
+
+    # Reconstruct labels
+    labels = []
+    for language in LM.keys():
+        labels.append(language)
 
     # Generate 4-grams
     raw_data = [list(ngrams(line, 4, pad_left=True, pad_right=True, left_pad_symbol='<s>', right_pad_symbol='</s>')) for line in raw_data]
     raw_data = np.array(raw_data)
 
-    # Transform data into count vectors
-    data = np.zeros((len(raw_data), len(vocab)))
+    # Accumulate the n-gram probabilities of query in LM
+    probabilities = []
+    predictions = []
     for i, line in enumerate(raw_data):
-        c = Counter(line)
-        for ngram in c:
-            data[i,reverse_vocab[ngram]] += c[ngram]
+        probabilities.append({label: 1 for label in labels})
+        for ngram in line:
+            if ngram in vocab:
+                for language, model in LM.items():
+                    probabilities[i][language] *= LM[language][ngram]
+        predictions.append(max(probabilities[i], key=probabilities[i].get))
 
-    print(data)
-
+    print(predictions)
 
 
 def usage():
