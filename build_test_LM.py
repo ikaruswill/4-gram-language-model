@@ -1,14 +1,12 @@
 #!/usr/bin/python
 import re
-from nltk.tokenize import wordpunct_tokenize, sent_tokenize
 from nltk.util import ngrams
-from sklearn.feature_extraction.text import CountVectorizer
+from collections import Counter
 import sys
 import getopt
 import numpy as np
 import scipy as sp
-from pprint import pprint
-from collections import Counter
+
 
 # np.set_printoptions(threshold=np.inf)
 
