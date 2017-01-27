@@ -82,7 +82,7 @@ def test_LM(in_file, out_file, LM):
     print("testing language models...")
     # This is an empty method
     # Pls implement your code in below
-    with open(in_file) as f:
+    with open(in_file, 'r') as f:
         raw_data = f.read().splitlines()
 
     # Reconstruct vocab from any label
