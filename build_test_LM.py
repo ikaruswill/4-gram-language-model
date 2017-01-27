@@ -1,6 +1,7 @@
 #!/usr/bin/python
 import re
 from nltk.util import ngrams
+from nltk import word_tokenize
 from collections import Counter
 import sys
 import getopt
@@ -31,8 +32,12 @@ def build_LM(in_file):
     raw_labels = np.array(raw_labels)
     lm_labels = list(set(raw_labels))
     
-    # Generate 4-grams
+    # Generate character 4-grams
     raw_data = [list(ngrams(line, 4, pad_left=True, pad_right=True, left_pad_symbol='<s>', right_pad_symbol='</s>')) for line in raw_data]
+
+    # # Generate token 4-grams
+    # raw_data = [list(ngrams(word_tokenize(line), 4, pad_left=True, pad_right=True, left_pad_symbol='<s>', right_pad_symbol='</s>')) for line in raw_data]
+
     raw_data = np.array(raw_data)
 
     # Populate sorted vocab
@@ -83,7 +88,7 @@ def test_LM(in_file, out_file, LM):
     with open(in_file, 'r') as f:
         raw_data = f.read().splitlines()
 
-    # Reconstruct vocab from any label
+    # Reconstruct vocab set from any label
     vocab = set(next(iter(LM.values())))
 
     # Reconstruct labels
@@ -91,8 +96,11 @@ def test_LM(in_file, out_file, LM):
     for language in LM.keys():
         labels.append(language)
 
-    # Generate 4-grams
+    # Generate character 4-grams
     test_data = [list(ngrams(line, 4, pad_left=True, pad_right=True, left_pad_symbol='<s>', right_pad_symbol='</s>')) for line in raw_data]
+
+    # # Generate token 4-grams
+    # test_data = [list(ngrams(word_tokenize(line), 4, pad_left=True, pad_right=True, left_pad_symbol='<s>', right_pad_symbol='</s>')) for line in raw_data]
 
     # Accumulate the n-gram probabilities of query in LM
     probabilities = []
@@ -103,6 +111,7 @@ def test_LM(in_file, out_file, LM):
             if ngram in vocab:
                 for language, model in LM.items():
                     probabilities[i][language] *= LM[language][ngram]
+        # Make a maximum likelihood estimation for each line
         predictions.append(max(probabilities[i], key=probabilities[i].get))
 
     # Output results in out_file
