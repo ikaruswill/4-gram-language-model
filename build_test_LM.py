@@ -94,13 +94,12 @@ def test_LM(in_file, out_file, LM):
         labels.append(language)
 
     # Generate 4-grams
-    raw_data = [list(ngrams(line, 4, pad_left=True, pad_right=True, left_pad_symbol='<s>', right_pad_symbol='</s>')) for line in raw_data]
-    raw_data = np.array(raw_data)
+    test_data = [list(ngrams(line, 4, pad_left=True, pad_right=True, left_pad_symbol='<s>', right_pad_symbol='</s>')) for line in raw_data]
 
     # Accumulate the n-gram probabilities of query in LM
     probabilities = []
     predictions = []
-    for i, line in enumerate(raw_data):
+    for i, line in enumerate(test_data):
         probabilities.append({label: 1 for label in labels})
         for ngram in line:
             if ngram in vocab:
@@ -108,8 +107,12 @@ def test_LM(in_file, out_file, LM):
                     probabilities[i][language] *= LM[language][ngram]
         predictions.append(max(probabilities[i], key=probabilities[i].get))
 
-    print(predictions)
-
+    # Output results in out_file
+    with open(out_file, 'w') as f:
+        output_str = ''
+        for i, label in enumerate(predictions):
+            output_str += label + ' ' + raw_data[i] + '\n'
+        f.write(output_str)
 
 def usage():
     print("usage: " + sys.argv[0] + " -b input-file-for-building-LM -t input-file-for-testing-LM -o output-file")
