@@ -116,11 +116,14 @@ def test_LM(in_file, out_file, LM):
     probabilities = []
     predictions = []
     for i, line in enumerate(test_data):
-        probabilities.append({label: 1 for label in labels})
+        probabilities.append({label: 0 for label in labels})
         for ngram in line:
             if ngram in vocab:
                 for language, model in LM.items():
-                    probabilities[i][language] *= LM[language][ngram]
+                    if not probabilities[i][language]:
+                        probabilities[i][language] = LM[language][ngram]
+                    else:
+                        probabilities[i][language] *= LM[language][ngram]
         # Make a maximum likelihood estimation for each line
         predictions.append(max(probabilities[i], key=probabilities[i].get))
 
