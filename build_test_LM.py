@@ -34,9 +34,12 @@ def build_LM(in_file):
     raw_labels = np.array(raw_labels)
     lm_labels = list(set(raw_labels))
 
-    # # Filter out punctuation
+    # # Filter out all punctuation
     # punctuations = set(string.punctuation)
     # raw_data = [''.join([char for char in line if char not in punctuations]) for line in raw_data]
+
+    # Filter out punctuation between word boundaries
+    raw_data = [' '.join([word.strip(string.punctuation) for word in line.split()]) for line in raw_data]
     
     # Generate character 4-grams
     raw_data = [list(ngrams(line.lower(), 4, pad_left=True, pad_right=True, left_pad_symbol='<s>', right_pad_symbol='</s>')) for line in raw_data]
@@ -102,9 +105,12 @@ def test_LM(in_file, out_file, LM):
     for language in LM.keys():
         labels.append(language)
 
-    # # Filter out punctuation
+    # # Filter out all punctuation
     # punctuations = set(string.punctuation)
     # test_data = [''.join([char for char in line if char not in punctuations]) for line in raw_data]
+
+    # Filter out punctuation between word boundaries
+    test_data = [' '.join([word.strip(string.punctuation) for word in line.split()]) for line in raw_data]
 
     # Generate character 4-grams
     # Change raw_data to test_data in list comprehension if using punctuation filtering
