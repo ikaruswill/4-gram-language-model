@@ -7,6 +7,7 @@ import sys
 import getopt
 import numpy as np
 import scipy as sp
+import string
 
 
 # np.set_printoptions(threshold=np.inf)
@@ -31,9 +32,13 @@ def build_LM(in_file):
 
     raw_labels = np.array(raw_labels)
     lm_labels = list(set(raw_labels))
+
+    # # Filter out punctuation
+    # punctuations = set(string.punctuation)
+    # raw_data = [''.join([char for char in line if char not in punctuations]) for line in raw_data]
     
     # Generate character 4-grams
-    raw_data = [list(ngrams(line, 4, pad_left=True, pad_right=True, left_pad_symbol='<s>', right_pad_symbol='</s>')) for line in raw_data]
+    raw_data = [list(ngrams(line.lower(), 4, pad_left=True, pad_right=True, left_pad_symbol='<s>', right_pad_symbol='</s>')) for line in raw_data]
 
     # # Generate token 4-grams
     # raw_data = [list(ngrams(word_tokenize(line), 4, pad_left=True, pad_right=True, left_pad_symbol='<s>', right_pad_symbol='</s>')) for line in raw_data]
@@ -96,8 +101,12 @@ def test_LM(in_file, out_file, LM):
     for language in LM.keys():
         labels.append(language)
 
+    # # Filter out punctuation
+    # punctuations = set(string.punctuation)
+    # test_data = [''.join([char for char in line if char not in punctuations]) for line in raw_data]
+
     # Generate character 4-grams
-    test_data = [list(ngrams(line, 4, pad_left=True, pad_right=True, left_pad_symbol='<s>', right_pad_symbol='</s>')) for line in raw_data]
+    test_data = [list(ngrams(line.lower(), 4, pad_left=True, pad_right=True, left_pad_symbol='<s>', right_pad_symbol='</s>')) for line in test_data]
 
     # # Generate token 4-grams
     # test_data = [list(ngrams(word_tokenize(line), 4, pad_left=True, pad_right=True, left_pad_symbol='<s>', right_pad_symbol='</s>')) for line in raw_data]
