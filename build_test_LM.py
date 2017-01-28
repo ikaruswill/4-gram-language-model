@@ -106,7 +106,8 @@ def test_LM(in_file, out_file, LM):
     # test_data = [''.join([char for char in line if char not in punctuations]) for line in raw_data]
 
     # Generate character 4-grams
-    test_data = [list(ngrams(line.lower(), 4, pad_left=True, pad_right=True, left_pad_symbol='<s>', right_pad_symbol='</s>')) for line in test_data]
+    # Change raw_data to test_data in list comprehension if using punctuation filtering
+    test_data = [list(ngrams(line.lower(), 4, pad_left=True, pad_right=True, left_pad_symbol='<s>', right_pad_symbol='</s>')) for line in raw_data]
 
     # # Generate token 4-grams
     # test_data = [list(ngrams(word_tokenize(line), 4, pad_left=True, pad_right=True, left_pad_symbol='<s>', right_pad_symbol='</s>')) for line in raw_data]
