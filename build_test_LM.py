@@ -8,6 +8,7 @@ import getopt
 import numpy as np
 import scipy as sp
 import string
+import random
 
 
 # np.set_printoptions(threshold=np.inf)
@@ -125,7 +126,16 @@ def test_LM(in_file, out_file, LM):
                     else:
                         probabilities[i][language] *= LM[language][ngram]
         # Make a maximum likelihood estimation for each line
-        predictions.append(max(probabilities[i], key=probabilities[i].get))
+        sum_prob = sum(probabilities[i].values())
+        # If all n-grams are OOV, predict 'other'
+        if sum_prob == 0:
+            predictions.append('other')
+        # If all probabilities are the same, choose random
+        elif all(probability == (sum_prob / len(probabilities[i])) for probability in probabilities[i].values()):
+            predictions.append(random.choice(labels))
+        # If there is a clear winner, choose the language with the highest joint probability
+        else:
+            predictions.append(max(probabilities[i], key=probabilities[i].get))
 
     # Output results in out_file
     with open(out_file, 'w') as f:
