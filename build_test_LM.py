@@ -72,8 +72,7 @@ def build_LM(in_file):
 
         # Add-one smoothing
         for j, val in enumerate(data[i]):
-            if val == 0:
-                data[i,j] += 1
+            data[i,j] += 1
 
     del raw_data, raw_labels
 
